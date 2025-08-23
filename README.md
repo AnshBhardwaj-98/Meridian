@@ -40,5 +40,3 @@ Meridian is a real-time collaborative coding platform that allows developers to 
 
 ---
 
-## 📂 Project Structure
-
