@@ -19,10 +19,10 @@ Meridian is a real-time collaborative coding platform that allows developers to 
   Run your code in a safe, sandboxed environment with instant output.
 
 - **Collaboration Tools**
-  - Real time Code Collaboration  
-  - Code sharing via unique session links  
-  - Copy/clear buttons for output handling  
 
+  - Real time Code Collaboration
+  - Code sharing via unique session links
+  - Copy/clear buttons for output handling
 
 - **Light/Dark Themes**  
   Choose themes that suit your coding style.
@@ -31,12 +31,10 @@ Meridian is a real-time collaborative coding platform that allows developers to 
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React.js, TailwindCSS, 
-- **Editor**: Monaco Editor  
-- **Backend**: Node.js, Express  
-- **Real-time Communication**: WebSockets (Socket.io)  
-- **Code Execution**: Piston Api  
-
+- **Frontend**: React.js, TailwindCSS, DaisyUI, Lucide Icons
+- **Editor**: Monaco Editor
+- **Backend**: Node.js, Express
+- **Real-time Communication**: WebSockets (Socket.io)
+- **Code Execution**: Piston Api
 
 ---
-
