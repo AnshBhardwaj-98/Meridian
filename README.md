@@ -23,6 +23,7 @@ Meridian is a real-time collaborative coding platform that allows developers to 
   - Real time Code Collaboration
   - Code sharing via unique session links
   - Copy/clear buttons for output handling
+  - Reset/Clear buttons for code handeling
 
 - **Light/Dark Themes**  
   Choose themes that suit your coding style.
