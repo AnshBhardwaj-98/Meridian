@@ -18,7 +18,7 @@ const HomePage = () => {
 
   const handleEditorNavigation = (e) => {
     e.preventDefault();
-    navigate(`editor/${RoomID}`);
+    navigate(`editor/${RoomID}`, { state: { UserName: UserName } });
   };
 
   return (

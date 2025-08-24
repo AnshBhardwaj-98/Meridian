@@ -8,6 +8,8 @@ import EditorNavbar from "./EditorNavbar.components";
 import { Copy, Delete, Moon, StepBack, Sun, Trash } from "lucide-react";
 import Output from "./Output";
 import toast from "react-hot-toast";
+import { initSocket } from "../../socket.io";
+import { useLocation, useParams } from "react-router-dom";
 
 // import ThemeSelector from "./ThemeSelector";
 // import { loadTheme } from "monaco-themes";
@@ -64,6 +66,27 @@ const CodeEditor = () => {
   //   useEffect(() => {
   //     console.log("Language updated:", selectedLanguage);
   //   }, [selectedLanguage]);
+
+  const socketRef = useRef(null);
+  const { roomId } = useParams();
+  const location = useLocation();
+  useEffect(() => {
+    let socket;
+    const init = async () => {
+      socket = await initSocket();
+      socket.on("connect", () => console.log("Connected:", socket.id));
+      // Io.emit("join", {
+      //   roomId,
+      //   username: location.state?.UserName,
+      // });
+    };
+
+    init();
+
+    // return () => {
+    //   second;
+    // };
+  }, []);
 
   return (
     <div
