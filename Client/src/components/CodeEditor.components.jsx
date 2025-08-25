@@ -73,19 +73,31 @@ const CodeEditor = () => {
   useEffect(() => {
     let socket;
     const init = async () => {
-      socket = await initSocket();
-      socket.on("connect", () => console.log("Connected:", socket.id));
-      // Io.emit("join", {
-      //   roomId,
-      //   username: location.state?.UserName,
-      // });
+      socketRef.current = await initSocket();
+      socketRef.current.emit("join", {
+        roomId,
+        username: location.state?.UserName,
+      });
+
+      socketRef.current.on("userJoined", ({ userId, username }) => {
+        toast.success(`${username} joined the room`);
+      });
+
+      socketRef.current.on("userLeft", ({ userId, username }) => {
+        if (username) {
+          toast.error(`${username} left the room`);
+        }
+      });
     };
 
     init();
 
-    // return () => {
-    //   second;
-    // };
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
   }, []);
 
   return (
