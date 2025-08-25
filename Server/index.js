@@ -28,10 +28,8 @@ io.on("connection", (socket) => {
 
     const { username, roomId } = userData;
 
-    // Remove from map
     delete userSocketMap[socket.id];
 
-    // Notify remaining users in the room
     socket.to(roomId).emit("userLeft", {
       userId: socket.id,
       username,
