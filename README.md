@@ -33,6 +33,7 @@ Meridian is a real-time collaborative coding platform that allows developers to 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React.js, TailwindCSS, DaisyUI, Lucide Icons
+- **Global State Management**: Zustand
 - **Editor**: Monaco Editor
 - **Backend**: Node.js, Express
 - **Real-time Communication**: WebSockets (Socket.io)
