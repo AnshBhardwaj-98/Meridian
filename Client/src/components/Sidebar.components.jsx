@@ -2,13 +2,13 @@ import { LogOut, LucideAirVent, TruckElectric } from "lucide-react";
 import React, { useState } from "react";
 import Avatar from "react-avatar";
 import toast from "react-hot-toast";
+import { memberStore } from "../store/members.store";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
-  const [MemberList, setMemberList] = useState([
-    { socketid: "sfdaj", userName: "Ansh" },
-    { socketid: "asdf", userName: "Mansh Jain" },
-  ]);
+  const { AllMembers } = memberStore();
 
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   function copyToClipboard() {
     const url = window.location.pathname; // e.g. /profile/12345
@@ -22,6 +22,11 @@ const Sidebar = () => {
     toast.success("Room ID Successfully Copied");
   }
 
+  function handleExitRoom(e) {
+    e.preventDefault();
+    navigate("/");
+  }
+
   return (
     <div className="h-full w-32 bg-gray-950 ">
       <div className=" size-full felx flex-col ">
@@ -33,13 +38,13 @@ const Sidebar = () => {
 
         {/* member list */}
         <div className=" mb-4 h-[80%] overflow-y-scroll">
-          {MemberList.map((client) => {
+          {AllMembers.map((client) => {
             return (
               <div
-                key={client.socketid}
+                key={client.socketId}
                 className="flex flex-col items-center mt-2"
               >
-                <Avatar name={client.userName} size="60" round />
+                <Avatar name={client.username} size="60" round />
               </div>
             );
           })}
@@ -55,6 +60,7 @@ const Sidebar = () => {
           <button
             className="flex items-center justify-center bg-red-500 rounded-full p-2 mt-2"
             title="eixt room"
+            onClick={handleExitRoom}
           >
             <LogOut />
           </button>

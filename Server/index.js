@@ -9,16 +9,32 @@ const io = new Server(server);
 
 const userSocketMap = {};
 
+const getAllConnectedUsers = (roomId) => {
+  return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
+    (socketId) => {
+      return {
+        socketId,
+        username: userSocketMap[socketId].username,
+      };
+    }
+  );
+};
+
 io.on("connection", (socket) => {
   console.log(`user connected ${socket.id}`);
 
   socket.on("join", ({ roomId, username }) => {
     socket.join(roomId);
     userSocketMap[socket.id] = { username, roomId };
-    socket.to(roomId).emit("userJoined", {
+    const allUsers = getAllConnectedUsers(roomId);
+    // console.log(allUsers);
+
+    io.in(roomId).emit("userJoined", {
       userId: socket.id,
       username,
+      allUsers,
     });
+
     console.log(userSocketMap);
   });
 
@@ -27,12 +43,13 @@ io.on("connection", (socket) => {
     if (!userData) return;
 
     const { username, roomId } = userData;
-
+    const allUsers = getAllConnectedUsers(roomId);
     delete userSocketMap[socket.id];
 
-    socket.to(roomId).emit("userLeft", {
+    io.in(roomId).emit("userLeft", {
       userId: socket.id,
       username,
+      allUsers,
     });
 
     console.log(userSocketMap);

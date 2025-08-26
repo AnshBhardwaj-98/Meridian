@@ -10,6 +10,7 @@ import Output from "./Output";
 import toast from "react-hot-toast";
 import { initSocket } from "../../socket.io";
 import { useLocation, useParams } from "react-router-dom";
+import { memberStore } from "../store/members.store";
 
 // import ThemeSelector from "./ThemeSelector";
 // import { loadTheme } from "monaco-themes";
@@ -67,11 +68,11 @@ const CodeEditor = () => {
   //     console.log("Language updated:", selectedLanguage);
   //   }, [selectedLanguage]);
 
+  const { setAllMembers, allMembers } = memberStore();
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
   useEffect(() => {
-    let socket;
     const init = async () => {
       socketRef.current = await initSocket();
       socketRef.current.emit("join", {
@@ -79,11 +80,14 @@ const CodeEditor = () => {
         username: location.state?.UserName,
       });
 
-      socketRef.current.on("userJoined", ({ userId, username }) => {
+      socketRef.current.on("userJoined", ({ userId, username, allUsers }) => {
+        setAllMembers(allUsers);
+
         toast.success(`${username} joined the room`);
       });
 
-      socketRef.current.on("userLeft", ({ userId, username }) => {
+      socketRef.current.on("userLeft", ({ userId, username, allUsers }) => {
+        setAllMembers(allUsers);
         if (username) {
           toast.error(`${username} left the room`);
         }
