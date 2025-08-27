@@ -3,7 +3,7 @@ import * as monaco from "monaco-editor";
 import React, { useRef, useState, useEffect } from "react";
 import LanguageSelector from "./LanguageSelector";
 import { boilerplates } from "../Constants";
-import { Copy, StepBack, Moon, Sun } from "lucide-react";
+import { Copy, StepBack, Moon, Sun, Loader2 } from "lucide-react";
 import Output from "./Output";
 import toast from "react-hot-toast";
 import { initSocket } from "../../socket.io";
@@ -16,6 +16,7 @@ const CodeEditor = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
   const [Typer, setTyper] = useState("");
+  const [connecting, setConnecting] = useState(true);
 
   const { setAllMembers } = memberStore();
   const socketRef = useRef(null);
@@ -61,15 +62,23 @@ const CodeEditor = () => {
     });
   };
 
+  const dismissConnecting = () => {
+    setConnecting(false);
+  };
+
   // -------------------
   // Socket Setup
   // -------------------
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
-      socketRef.current.emit("join", {
-        roomId,
-        username: location.state?.UserName,
+
+      socketRef.current.on("connect", () => {
+        setConnecting(false);
+        socketRef.current.emit("join", {
+          roomId,
+          username: location.state?.UserName,
+        });
       });
 
       socketRef.current.on("userJoined", ({ username, allUsers }) => {
@@ -100,6 +109,27 @@ const CodeEditor = () => {
 
   return (
     <div className="w-full h-full flex flex-col bg-zinc-950 text-white">
+      {/* Connecting Modal */}
+      {connecting && (
+        <div className="absolute top-0 left-0 w-full h-full bg-black/70 flex flex-col justify-center items-center z-50">
+          <div className="bg-zinc-900 p-6 rounded-lg flex flex-col items-center gap-4">
+            <div className="animate-spin text-amber-500">
+              <Loader2 size={48} />
+            </div>
+            <span className="text-white text-lg font-medium">
+              Connecting to server...
+            </span>
+            <span>You can still Run your code </span>
+            <span>You will get Notified when connection is established</span>
+            <button
+              className="px-4 py-2 bg-red-600 rounded hover:bg-amber-600 transition"
+              onClick={dismissConnecting}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
       {/* Toolbar */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900">
         <div className="flex items-center gap-4">
