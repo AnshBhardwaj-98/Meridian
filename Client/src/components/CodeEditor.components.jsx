@@ -52,28 +52,15 @@ const CodeEditor = () => {
 
   function handleCodeClear() {
     setInitialValue(boilerplates[selectedLanguage]);
+    handleCodeChange(boilerplates[selectedLanguage]);
     toast.success("Reset to Default Code");
   }
-
-  //   async function onSelectTheme(themeName) {
-  //     console.log("in on select theme");
-
-  //     // const theme = await loadTheme(themeName);
-  //     // monaco.editor.defineTheme(themeName.toLowerCase(), theme);
-  //     setSelectedTheme(themeName.toLowerCase());
-  //     console.log(selectedTheme);
-  //   }
-
-  //   useEffect(() => {
-  //     console.log("Language updated:", selectedLanguage);
-  //   }, [selectedLanguage]);
 
   const { setAllMembers, allMembers } = memberStore();
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
 
-  const [Text, setText] = useState("text here");
   const [Typer, setTyper] = useState("");
 
   useEffect(() => {
@@ -132,26 +119,11 @@ const CodeEditor = () => {
     });
   }
 
-  function handletextarea(e) {
-    e.preventDefault();
-    const { value } = e.target;
-    setText(value);
-
-    socketRef.current.emit("textchange", { roomId: roomId, text: value });
-  }
-
   return (
     <div
       className="w-full
      h-full"
     >
-      {/* <textarea
-        name=""
-        id="textarea"
-        width={80}
-        value={Text}
-        onChange={handletextarea}
-      ></textarea> */}
       <div className="w-full h-16 flex items-center p-4 font-bold">
         <div className="w-full h-16 flex items-center p-4 font-bold">
           <span>Language: </span>
@@ -197,8 +169,8 @@ const CodeEditor = () => {
         value={InitialValue}
         onChange={handleCodeChange}
       />
-      <div className="h-[33%]" code={InitialValue}>
-        <Output />
+      <div className="h-[33%]">
+        <Output language={selectedLanguage} code={InitialValue} />
       </div>
     </div>
   );

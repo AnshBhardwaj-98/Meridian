@@ -22,7 +22,7 @@ const getAllConnectedUsers = (roomId) => {
 };
 
 io.on("connection", (socket) => {
-  console.log(`user connected ${socket.id}`);
+  // console.log(`user connected ${socket.id}`);
 
   socket.on("join", ({ roomId, username }) => {
     socket.join(roomId);
@@ -38,8 +38,6 @@ io.on("connection", (socket) => {
     if (roomCodeMap[roomId]) {
       socket.emit("codeupdate", { code: roomCodeMap[roomId], typing: null });
     }
-
-    console.log(userSocketMap);
   });
 
   socket.on("codechange", ({ roomId, code, typerSocketId }) => {
@@ -47,9 +45,6 @@ io.on("connection", (socket) => {
     roomCodeMap[roomId] = code;
 
     socket.in(roomId).emit("codeupdate", { code, typing });
-  });
-  socket.on("textchange", ({ roomId, text }) => {
-    socket.to(roomId).emit("textupdate", text);
   });
 
   socket.on("disconnect", () => {
@@ -66,13 +61,11 @@ io.on("connection", (socket) => {
       allUsers,
     });
 
-    console.log(userSocketMap);
-
-    console.log(`User disconnected: ${username} (${socket.id})`);
+    // console.log(`User disconnected: ${username} (${socket.id})`);
   });
 });
 
 const port = 3000;
 
-app.get("/", (req, res) => res.send("Meridian Live"));
+// app.get("/", (req, res) => res.send("Meridian Live"));
 server.listen(port, () => console.log(`app listening on port ${port}!`));

@@ -9,16 +9,12 @@ const Sidebar = () => {
   const { AllMembers } = memberStore();
 
   const navigate = useNavigate();
-  const [copied, setCopied] = useState(false);
   function copyToClipboard() {
-    const url = window.location.pathname; // e.g. /profile/12345
+    const url = window.location.pathname;
     const parts = url.split("/");
-    const id = parts[parts.length - 1]; // last segment = id
+    const id = parts[parts.length - 1];
 
-    navigator.clipboard.writeText(id).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard.writeText(id);
     toast.success("Room ID Successfully Copied");
   }
 
