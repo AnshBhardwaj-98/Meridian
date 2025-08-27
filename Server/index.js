@@ -5,7 +5,12 @@ import { Server } from "socket.io";
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
 
 const userSocketMap = {};
 const roomCodeMap = {};
@@ -65,7 +70,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
 // app.get("/", (req, res) => res.send("Meridian Live"));
-server.listen(port, () => console.log(`app listening on port ${port}!`));
+server.listen(PORT, () => console.log(`app listening on port ${PORT}!`));

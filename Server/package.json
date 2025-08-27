@@ -1,15 +1,19 @@
 {
   "name": "server",
   "version": "1.0.0",
+   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "author": "",
+  "author": "Divyansh Bhardwaj",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
     "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
