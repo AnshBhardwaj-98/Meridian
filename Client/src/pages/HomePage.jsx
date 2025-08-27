@@ -20,8 +20,8 @@ const HomePage = () => {
     e.preventDefault();
     const trimmedUser = UserName.trim();
 
-    if (!RoomID || !trimmedUser || /\s/.test(trimmedUser)) {
-      alert("Username cannot be empty or contain spaces!");
+    if (!RoomID || !trimmedUser) {
+      toast.error("Username cannot be empty or contain spaces!");
       return;
     }
 

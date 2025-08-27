@@ -1,68 +1,69 @@
 import Editor from "@monaco-editor/react";
-
 import * as monaco from "monaco-editor";
 import React, { useRef, useState, useEffect } from "react";
 import LanguageSelector from "./LanguageSelector";
 import { boilerplates } from "../Constants";
-import EditorNavbar from "./EditorNavbar.components";
-import { Copy, Delete, Moon, StepBack, Sun, Trash } from "lucide-react";
+import { Copy, StepBack, Moon, Sun } from "lucide-react";
 import Output from "./Output";
 import toast from "react-hot-toast";
 import { initSocket } from "../../socket.io";
 import { useLocation, useParams } from "react-router-dom";
 import { memberStore } from "../store/members.store";
 
-// import ThemeSelector from "./ThemeSelector";
-// import { loadTheme } from "monaco-themes";
-// import dracula from "monaco-themes/themes/Dracula.json";
-// import monokai from "monaco-themes/themes/Monokai.json";
-
-// monaco.editor.defineTheme("dracula", dracula);
-// monaco.editor.defineTheme("monokai", monokai);
-
 const CodeEditor = () => {
   const editorRef = useRef();
   const [InitialValue, setInitialValue] = useState(boilerplates["cpp"]);
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
-  const [out, setOut] = useState("Hello, world!\nLine 2\nLine 3");
+  const [Typer, setTyper] = useState("");
 
-  function handleEditorDidMount(editor) {
-    editorRef.current = editor;
-    editor.focus();
-  }
-
-  function onSelect(language) {
-    setSelectedLanguage(language);
-    setInitialValue(boilerplates[language]);
-  }
-
-  function setTheme() {
-    if (selectedTheme === "vs-dark") {
-      setSelectedTheme("vs-light");
-    } else {
-      setSelectedTheme("vs-dark");
-    }
-  }
-
-  function handleCodeCopy() {
-    navigator.clipboard.writeText(InitialValue);
-    toast.success("code copied!");
-  }
-
-  function handleCodeClear() {
-    setInitialValue(boilerplates[selectedLanguage]);
-    handleCodeChange(boilerplates[selectedLanguage]);
-    toast.success("Reset to Default Code");
-  }
-
-  const { setAllMembers, allMembers } = memberStore();
+  const { setAllMembers } = memberStore();
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
 
-  const [Typer, setTyper] = useState("");
+  // -------------------
+  // Handlers
+  // -------------------
+  const handleEditorDidMount = (editor) => {
+    editorRef.current = editor;
+    editor.focus();
+  };
 
+  const handleLanguageSelect = (language) => {
+    setSelectedLanguage(language);
+    setInitialValue(boilerplates[language]);
+  };
+
+  const toggleTheme = () => {
+    setSelectedTheme((prev) => (prev === "vs-dark" ? "vs-light" : "vs-dark"));
+  };
+
+  const handleCodeCopy = () => {
+    navigator.clipboard.writeText(InitialValue);
+    toast.success("Code copied!");
+  };
+
+  const handleCodeClear = () => {
+    setInitialValue(boilerplates[selectedLanguage]);
+    handleCodeChange(boilerplates[selectedLanguage]);
+    toast.success("Reset to Default Code");
+  };
+
+  const handleCodeChange = (value) => {
+    setInitialValue(value);
+    setTyper(location.state?.UserName);
+
+    socketRef.current.emit("codechange", {
+      roomId,
+      code: value,
+      typerSocketId: socketRef.current.id,
+    });
+  };
+
+  // -------------------
+  // Socket Setup
+  // -------------------
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
@@ -71,28 +72,19 @@ const CodeEditor = () => {
         username: location.state?.UserName,
       });
 
-      socketRef.current.on("userJoined", ({ userId, username, allUsers }) => {
+      socketRef.current.on("userJoined", ({ username, allUsers }) => {
         setAllMembers(allUsers);
-
         toast.success(`${username} joined the room`);
       });
 
-      socketRef.current.on("userLeft", ({ userId, username, allUsers }) => {
+      socketRef.current.on("userLeft", ({ username, allUsers }) => {
         setAllMembers(allUsers);
-        if (username) {
-          toast.error(`${username} left the room`);
-        }
+        if (username) toast.error(`${username} left the room`);
       });
 
       socketRef.current.on("codeupdate", ({ code, typing }) => {
         setTyper(typing);
-        // console.log(typing);
-
         setInitialValue(code);
-      });
-
-      socketRef.current.on("textupdate", (text) => {
-        setText(text);
       });
     };
 
@@ -106,70 +98,81 @@ const CodeEditor = () => {
     };
   }, []);
 
-  function handleCodeChange(value) {
-    setInitialValue(value);
-    // console.log(value);
-    // console.log(socketRef.current.id);
-    setTyper(location.state?.UserName);
-
-    socketRef.current.emit("codechange", {
-      roomId: roomId,
-      code: value,
-      typerSocketId: socketRef.current.id,
-    });
-  }
-
   return (
-    <div
-      className="w-full
-     h-full"
-    >
-      <div className="w-full h-16 flex items-center p-4 font-bold">
-        <div className="w-full h-16 flex items-center p-4 font-bold">
-          <span>Language: </span>
-          <LanguageSelector
-            selectedLanguage={selectedLanguage}
-            onSelect={onSelect}
-          />
-          <span className="ml-2">Theme:</span>
-          {/*<ThemeSelector selectedTheme={selectedTheme} onSelect={onSelectTheme} /> */}
-          <div className="ml-2" onClick={setTheme}>
-            {selectedTheme === "vs-dark" ? <Moon /> : <Sun />}
+    <div className="w-full h-full flex flex-col bg-zinc-950 text-white">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900">
+        <div className="flex items-center gap-4">
+          {/* Language Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Language:</span>
+            <LanguageSelector
+              selectedLanguage={selectedLanguage}
+              onSelect={handleLanguageSelect}
+            />
           </div>
-          <div className="ml-2 text-gray-600 font-light text-sm border-l-1 border-l-amber-600 px-2">
-            {" "}
-            Recent changes by: <span className="text-gray-400">{Typer}</span>
+
+          {/* Theme Toggle */}
+          <div
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={toggleTheme}
+          >
+            <span className="text-sm font-medium">Theme:</span>
+            {selectedTheme === "vs-dark" ? (
+              <Moon size={18} />
+            ) : (
+              <Sun size={18} />
+            )}
+          </div>
+
+          {/* Recent Typer */}
+          <div className="ml-6 text-xs text-zinc-400 border-l pl-4 border-zinc-700">
+            Recent changes by:{" "}
+            <span className="text-amber-400">{Typer || "—"}</span>
           </div>
         </div>
-        <div className="flex items-center justify-between w-116  ">
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
           <button
-            className="flex  items-center mr-4 rounded-2xl border-2 border-gray-800 py-2 px-4 hover:bg-red-600 hover:animate-pulse"
             onClick={handleCodeClear}
-            title="Reset to boilerplate code"
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm hover:bg-red-600 transition"
+            title="Reset code"
           >
-            <span>Reset Code</span>
-            <StepBack className="ml-4" />
+            Reset
+            <StepBack size={16} />
           </button>
+
           <button
-            className="flex items-center rounded-2xl border-2 border-gray-800 py-2 px-4 hover:bg-amber-600 hover:animate-pulse"
             onClick={handleCodeCopy}
-            title="copy code"
+            className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2 text-sm hover:bg-amber-600 transition"
+            title="Copy code"
           >
-            <span>Copy code</span>
-            <Copy className="ml-4" />
+            Copy
+            <Copy size={16} />
           </button>
         </div>
       </div>
-      <Editor
-        language={selectedLanguage}
-        height="67%"
-        width="100%"
-        theme={selectedTheme}
-        onMount={handleEditorDidMount}
-        value={InitialValue}
-        onChange={handleCodeChange}
-      />
-      <div className="h-[33%]">
+
+      {/* Editor */}
+      <div className="flex-1">
+        <Editor
+          language={selectedLanguage}
+          theme={selectedTheme}
+          value={InitialValue}
+          onMount={handleEditorDidMount}
+          onChange={handleCodeChange}
+          options={{
+            fontSize: 14,
+            minimap: { enabled: true },
+            scrollBeyondLastLine: false,
+            smoothScrolling: true,
+          }}
+        />
+      </div>
+
+      {/* Output */}
+      <div className="h-[30%] border-t border-zinc-800 bg-zinc-900">
         <Output language={selectedLanguage} code={InitialValue} />
       </div>
     </div>

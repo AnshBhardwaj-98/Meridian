@@ -1,4 +1,4 @@
-import { Clipboard, Copy, Loader, TriangleRight } from "lucide-react";
+import { Clipboard, Loader2, Play, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -6,7 +6,7 @@ const Output = ({ language, code }) => {
   const [output, setOutput] = useState(
     "Your program output will appear here..."
   );
-  const [loading, setloading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(output);
@@ -14,12 +14,12 @@ const Output = ({ language, code }) => {
   };
 
   const handleClear = () => {
-    setOutput("");
+    setOutput("Your program output will appear here...");
   };
 
   const handleRunCode = async () => {
-    setloading(true);
-    setOutput("Running The code");
+    setLoading(true);
+    setOutput("⏳ Running your code...");
 
     try {
       const res = await fetch("https://emkc.org/api/v2/piston/execute", {
@@ -28,7 +28,7 @@ const Output = ({ language, code }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          language: language,
+          language,
           version: "*",
           files: [
             {
@@ -42,52 +42,62 @@ const Output = ({ language, code }) => {
       const data = await res.json();
       const result = data.run;
 
-      // console.log(data);
-      // console.log(result);
-
       if (result.stderr) {
         setOutput(result.stderr);
       } else {
-        setOutput(result.stdout || "No output");
+        setOutput(result.stdout || "⚠️ No output");
       }
     } catch (err) {
-      setOutput("Error running code");
+      setOutput("❌ Error running code");
     } finally {
-      setloading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full h-full   shadow-md bg-gray-900 text-white">
-      {/* Header with buttons */}
-      <div className="flex justify-between items-center mb-2 p-2">
-        <h2 className="text-sm font-semibold">Output</h2>
+    <div className="w-full h-full flex flex-col bg-[#1e1e2f] text-white shadow-lg border border-gray-800">
+      {/* Header */}
+      <div className="flex justify-between items-center px-4 py-2 border-b border-gray-700 bg-[#2a2a40] ">
+        <h2 className="text-sm font-semibold tracking-wide">Output</h2>
         <div className="flex gap-2">
           <button
-            className="px-2 py-1 bg-emerald-800 hover:bg-emerald-950 rounded-lg text-sm"
+            className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 rounded-md text-sm font-medium transition"
             onClick={handleRunCode}
+            disabled={loading}
           >
-            Run Code
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Play size={16} />
+            )}
+            Run
           </button>
           <button
             onClick={handleCopy}
-            className="px-2 py-1 bg-blue-800 hover:bg-blue-950 rounded-lg text-sm"
-            title="copy output"
+            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium transition"
+            title="Copy output"
           >
-            <Clipboard size={"16px"} />
+            <Clipboard size={16} />
           </button>
           <button
             onClick={handleClear}
-            className="px-2 py-1 bg-red-800 hover:bg-red-950 rounded-lg text-sm"
+            className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium transition"
           >
-            Clear
+            <Trash2 size={16} />
           </button>
         </div>
       </div>
 
-      {/* Output area */}
-      <div className="w-full h-full p-2 bg-black  overflow-auto font-mono text-sm whitespace-pre-wrap">
-        {loading ? <Loader /> : output}
+      {/* Output content */}
+      <div className="flex-1 p-3 bg-black font-mono text-sm overflow-auto whitespace-pre-wrap ">
+        {loading ? (
+          <div className="flex items-center gap-2 text-gray-400">
+            <Loader2 size={18} className="animate-spin" />
+            Running...
+          </div>
+        ) : (
+          output
+        )}
       </div>
     </div>
   );
