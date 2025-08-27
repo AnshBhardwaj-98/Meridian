@@ -8,6 +8,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const userSocketMap = {};
+const roomCodeMap = {};
 
 const getAllConnectedUsers = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
@@ -34,8 +35,21 @@ io.on("connection", (socket) => {
       username,
       allUsers,
     });
+    if (roomCodeMap[roomId]) {
+      socket.emit("codeupdate", { code: roomCodeMap[roomId], typing: null });
+    }
 
     console.log(userSocketMap);
+  });
+
+  socket.on("codechange", ({ roomId, code, typerSocketId }) => {
+    const typing = userSocketMap[typerSocketId].username;
+    roomCodeMap[roomId] = code;
+
+    socket.in(roomId).emit("codeupdate", { code, typing });
+  });
+  socket.on("textchange", ({ roomId, text }) => {
+    socket.to(roomId).emit("textupdate", text);
   });
 
   socket.on("disconnect", () => {

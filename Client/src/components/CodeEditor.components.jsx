@@ -27,7 +27,7 @@ const CodeEditor = () => {
   const [selectedTheme, setSelectedTheme] = useState("vs-dark");
   const [out, setOut] = useState("Hello, world!\nLine 2\nLine 3");
 
-  function focusEditor(editor) {
+  function handleEditorDidMount(editor) {
     editorRef.current = editor;
     editor.focus();
   }
@@ -72,6 +72,10 @@ const CodeEditor = () => {
   const socketRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
+
+  const [Text, setText] = useState("text here");
+  const [Typer, setTyper] = useState("");
+
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initSocket();
@@ -92,6 +96,17 @@ const CodeEditor = () => {
           toast.error(`${username} left the room`);
         }
       });
+
+      socketRef.current.on("codeupdate", ({ code, typing }) => {
+        setTyper(typing);
+        // console.log(typing);
+
+        setInitialValue(code);
+      });
+
+      socketRef.current.on("textupdate", (text) => {
+        setText(text);
+      });
     };
 
     init();
@@ -104,11 +119,39 @@ const CodeEditor = () => {
     };
   }, []);
 
+  function handleCodeChange(value) {
+    setInitialValue(value);
+    // console.log(value);
+    // console.log(socketRef.current.id);
+    setTyper(location.state?.UserName);
+
+    socketRef.current.emit("codechange", {
+      roomId: roomId,
+      code: value,
+      typerSocketId: socketRef.current.id,
+    });
+  }
+
+  function handletextarea(e) {
+    e.preventDefault();
+    const { value } = e.target;
+    setText(value);
+
+    socketRef.current.emit("textchange", { roomId: roomId, text: value });
+  }
+
   return (
     <div
       className="w-full
      h-full"
     >
+      {/* <textarea
+        name=""
+        id="textarea"
+        width={80}
+        value={Text}
+        onChange={handletextarea}
+      ></textarea> */}
       <div className="w-full h-16 flex items-center p-4 font-bold">
         <div className="w-full h-16 flex items-center p-4 font-bold">
           <span>Language: </span>
@@ -120,6 +163,10 @@ const CodeEditor = () => {
           {/*<ThemeSelector selectedTheme={selectedTheme} onSelect={onSelectTheme} /> */}
           <div className="ml-2" onClick={setTheme}>
             {selectedTheme === "vs-dark" ? <Moon /> : <Sun />}
+          </div>
+          <div className="ml-2 text-gray-600 font-light text-sm border-l-1 border-l-amber-600 px-2">
+            {" "}
+            Recent changes by: <span className="text-gray-400">{Typer}</span>
           </div>
         </div>
         <div className="flex items-center justify-between w-116  ">
@@ -146,9 +193,9 @@ const CodeEditor = () => {
         height="67%"
         width="100%"
         theme={selectedTheme}
-        onMount={focusEditor}
+        onMount={handleEditorDidMount}
         value={InitialValue}
-        onChange={(value) => setInitialValue(value)}
+        onChange={handleCodeChange}
       />
       <div className="h-[33%]" code={InitialValue}>
         <Output />
